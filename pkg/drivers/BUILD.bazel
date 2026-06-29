@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "drivers",
+    srcs = [
+        "docker_driver.go",
+        "driver.go",
+        "host_driver.go",
+        "tar_driver.go",
+    ],
+    importpath = "github.com/GoogleContainerTools/container-structure-test/pkg/drivers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/pkgutil",
+        "//pkg/types/unversioned",
+        "//pkg/utils",
+        "@com_github_fsouza_go_dockerclient//:go-dockerclient",
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
+        "@com_github_google_go_containerregistry//pkg/v1/mutate",
+        "@com_github_joho_godotenv//:godotenv",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
+
+go_test(
+    name = "drivers_test",
+    srcs = ["tar_driver_test.go"],
+    embed = [":drivers"],
+    deps = ["//internal/pkgutil"],
+)

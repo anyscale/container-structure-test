@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "cmd",
+    srcs = [
+        "cmd.go",
+        "test.go",
+        "version.go",
+    ],
+    importpath = "github.com/GoogleContainerTools/container-structure-test/cmd/container-structure-test/app/cmd",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cmd/container-structure-test/app/cmd/test",
+        "//cmd/container-structure-test/app/flags",
+        "//internal/pkgutil",
+        "//pkg/color",
+        "//pkg/config",
+        "//pkg/drivers",
+        "//pkg/output",
+        "//pkg/types/unversioned",
+        "//pkg/utils",
+        "//pkg/version",
+        "@com_github_fsouza_go_dockerclient//:go-dockerclient",
+        "@com_github_google_go_containerregistry//pkg/name",
+        "@com_github_google_go_containerregistry//pkg/v1/daemon",
+        "@com_github_opencontainers_image_spec//specs-go/v1:specs-go",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_sirupsen_logrus//:logrus",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)

@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "types",
+    srcs = [
+        "command.go",
+        "file_content.go",
+        "file_existence.go",
+        "licenses.go",
+        "structure.go",
+    ],
+    importpath = "github.com/GoogleContainerTools/container-structure-test/pkg/types/v1",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/drivers",
+        "//pkg/types/unversioned",
+        "//pkg/utils",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
+
+go_test(
+    name = "types_test",
+    srcs = ["file_existence_test.go"],
+    embed = [":types"],
+)

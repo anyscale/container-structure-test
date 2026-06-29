@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "container-structure-test_lib",
+    srcs = ["container-structure-test.go"],
+    importpath = "github.com/GoogleContainerTools/container-structure-test/cmd/container-structure-test",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//cmd/container-structure-test/app",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
+
+go_binary(
+    name = "container-structure-test",
+    embed = [":container-structure-test_lib"],
+    visibility = ["//visibility:public"],
+)

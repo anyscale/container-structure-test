@@ -1,0 +1,43 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "pkgutil",
+    srcs = [
+        "fs_utils.go",
+        "image_utils.go",
+        "root_path.go",
+        "tar_utils.go",
+        "transport_builder.go",
+    ],
+    importpath = "github.com/GoogleContainerTools/container-structure-test/internal/pkgutil",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@com_github_google_go_containerregistry//pkg/authn",
+        "@com_github_google_go_containerregistry//pkg/name",
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
+        "@com_github_google_go_containerregistry//pkg/v1/daemon",
+        "@com_github_google_go_containerregistry//pkg/v1/layout",
+        "@com_github_google_go_containerregistry//pkg/v1/mutate",
+        "@com_github_google_go_containerregistry//pkg/v1/remote",
+        "@com_github_google_go_containerregistry//pkg/v1/tarball",
+        "@com_github_moby_sys_sequential//:sequential",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
+
+go_test(
+    name = "pkgutil_test",
+    srcs = [
+        "image_utils_test.go",
+        "tar_utils_test.go",
+    ],
+    embed = [":pkgutil"],
+    deps = [
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
+        "@com_github_google_go_containerregistry//pkg/v1/empty",
+        "@com_github_google_go_containerregistry//pkg/v1/layout",
+        "@com_github_google_go_containerregistry//pkg/v1/mutate",
+        "@com_github_google_go_containerregistry//pkg/v1/tarball",
+    ],
+)
