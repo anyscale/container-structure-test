@@ -308,6 +308,9 @@ containerRunOptions:
     - NET_BIND_SERVICE
   drop_capabilities:            # Drop list of Linux capabilities (--cap-drop)
     - NET_BIND_SERVICE
+  sysctls:                      # set namespaced kernel parameters (--sysctl)
+    net.core.somaxconn: "1024"
+    net.ipv4.tcp_max_syn_backlog: "4096"
   bindMounts:                   # Bind mount a volume (--volume, -v)
     - /etc/example/dir:/etc/dir
 ```

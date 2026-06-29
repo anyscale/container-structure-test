@@ -72,6 +72,7 @@ func (d *DockerDriver) hostConfig() *docker.HostConfig {
 			Capabilities: d.runOpts.CapAdd,
 			Binds:        d.runOpts.BindMounts,
 			Privileged:   d.runOpts.Privileged,
+			Sysctls:      d.runOpts.Sysctls,
 			Runtime:      d.runtime,
 		}
 	}
@@ -82,6 +83,7 @@ func (d *DockerDriver) hostConfig() *docker.HostConfig {
 			Capabilities: d.runOpts.CapAdd,
 			Binds:        d.runOpts.BindMounts,
 			Privileged:   d.runOpts.Privileged,
+			Sysctls:      d.runOpts.Sysctls,
 		}
 	}
 	if d.runtime != "" {

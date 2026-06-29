@@ -47,12 +47,13 @@ type Config struct {
 type ContainerRunOptions struct {
 	User       string
 	Privileged bool
-	TTY        bool     `yaml:"allocateTty"`
-	EnvVars    []string `yaml:"envVars"`
-	EnvFile    string   `yaml:"envFile"`
-	CapAdd     []string `yaml:"capabilities"`
-	CapDrop    []string `yaml:"drop_capabilities"`
-	BindMounts []string `yaml:"bindMounts"`
+	TTY        bool              `yaml:"allocateTty"`
+	EnvVars    []string          `yaml:"envVars"`
+	EnvFile    string            `yaml:"envFile"`
+	Sysctls    map[string]string `yaml:"sysctls"`
+	CapAdd     []string          `yaml:"capabilities"`
+	CapDrop    []string          `yaml:"drop_capabilities"`
+	BindMounts []string          `yaml:"bindMounts"`
 }
 
 func (opts *ContainerRunOptions) IsSet() bool {
@@ -63,7 +64,8 @@ func (opts *ContainerRunOptions) IsSet() bool {
 		(opts.EnvVars != nil && len(opts.EnvVars) > 0) ||
 		(opts.CapAdd != nil && len(opts.CapAdd) > 0) ||
 		(opts.CapDrop != nil && len(opts.CapDrop) > 0) ||
-		(opts.BindMounts != nil && len(opts.BindMounts) > 0)
+		(opts.BindMounts != nil && len(opts.BindMounts) > 0) ||
+		len(opts.Sysctls) > 0
 }
 
 type TestResult struct {
