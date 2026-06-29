@@ -7,7 +7,20 @@ module(
 
 bazel_dep(name = "container_structure_test", version = "0.0.0")
 
+# The from-source toolchain (registered below) compiles
+# @container_structure_test//cmd/container-structure-test, a go_binary. rules_go
+# must be visible under its io_bazel_rules_go apparent name so Go build settings
+# such as --@io_bazel_rules_go//go/config:pure resolve in this root module.
+bazel_dep(name = "rules_go", version = "0.61.1", repo_name = "io_bazel_rules_go")
+
 local_path_override(
     module_name = "container_structure_test",
     path = "../..",
 )
+
+# Register the from-source toolchain first so toolchain resolution prefers
+# HEAD's go_binary over the downloaded release toolchains that
+# container_structure_test registers. Earliest registration wins, and the root
+# module's registrations precede those of its dependencies. This makes the
+# smoke test exercise HEAD's rule against HEAD's binary.
+register_toolchains("@container_structure_test//bazel:from_source_structure_test_toolchain")

@@ -1,9 +1,27 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load(":toolchain.bzl", "structure_test_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
 toolchain_type(
     name = "structure_test_toolchain_type",
+)
+
+# Smoke-test-only toolchain backed by the from-source go_binary instead of a
+# downloaded release. The bazel/test smoke module registers
+# //bazel:from_source_structure_test_toolchain ahead of the downloaded
+# toolchains so HEAD's rule definition is exercised against HEAD's binary.
+# Real consumers never reach this target; they get the release toolchain wired
+# up by repositories.bzl.
+structure_test_toolchain(
+    name = "from_source_structure_test",
+    structure_test = "//cmd/container-structure-test",
+)
+
+toolchain(
+    name = "from_source_structure_test_toolchain",
+    toolchain = ":from_source_structure_test",
+    toolchain_type = ":structure_test_toolchain_type",
 )
 
 bzl_library(

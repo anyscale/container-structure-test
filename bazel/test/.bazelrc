@@ -1,1 +1,6 @@
 # Bazel options go here
+
+# Required so the container_structure_test module's isolated go_deps usage (which
+# carries the docker proto-disable gazelle_override) is accepted while building
+# the from-source binary that backs the smoke-test toolchain.
+common --experimental_isolated_extension_usages

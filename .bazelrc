@@ -1,1 +1,7 @@
 common --enable_bzlmod
+
+# The go_deps extension is isolated so the docker proto-disable gazelle_override
+# (forbidden in non-root modules) keeps working when bazel/test consumes this
+# module as a dependency to build the from-source container-structure-test
+# binary. Isolated usages may carry overrides regardless of root status.
+common --experimental_isolated_extension_usages
