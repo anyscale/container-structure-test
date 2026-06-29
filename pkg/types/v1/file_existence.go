@@ -75,7 +75,7 @@ func (ft FileExistenceTest) Run(driver drivers.Driver) *types.TestResult {
 	var info os.FileInfo
 	info, err := driver.StatFile(ft.Path)
 	if info == nil && ft.ShouldExist {
-		result.Errorf(errors.Wrap(err, "Error examining file in container").Error())
+		result.Errorf("%s", errors.Wrap(err, "Error examining file in container").Error())
 		result.Fail()
 		return result
 	}

@@ -137,7 +137,7 @@ func ProcessResults(out, reportOut io.Writer, format, reportFormat unversioned.O
 		errStrings = append(errStrings, "FAIL")
 	}
 	if len(errStrings) > 0 {
-		err = fmt.Errorf(strings.Join(errStrings, "\n"))
+		err = fmt.Errorf("%s", strings.Join(errStrings, "\n"))
 	}
 
 	summary := unversioned.SummaryObject{

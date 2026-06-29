@@ -76,7 +76,7 @@ func (lt LicenseTest) Run(driver drivers.Driver) *types.TestResult {
 			if !p.IsDir() {
 				continue
 			}
-			logrus.Debugf(p.Name())
+			logrus.Debug(p.Name())
 			// Skip over packages in the whitelist
 			whitelisted := false
 			for _, w := range whitelist {
