@@ -113,7 +113,7 @@ func run(out io.Writer) error {
 		if opts.Driver == drivers.Tar {
 			args.OCILayout = opts.ImageFromLayout
 		} else {
-			img, desc, err := pkgutil.ImageFromOCILayout(opts.ImageFromLayout)
+			img, desc, err := pkgutil.ImageFromOCILayout(opts.ImageFromLayout, opts.Platform)
 			if err != nil {
 				logrus.Fatalf("loading OCI layout %s: %v", opts.ImageFromLayout, err)
 			}

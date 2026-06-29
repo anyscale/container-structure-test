@@ -35,7 +35,7 @@ type TarDriver struct {
 
 func NewTarDriver(args DriverConfig) (Driver, error) {
 	if args.OCILayout != "" {
-		image, err := imageFromOCILayout(args.OCILayout)
+		image, err := imageFromOCILayout(args.OCILayout, args.Platform)
 		if err != nil {
 			return nil, errors.Wrap(err, "processing OCI layout")
 		}
@@ -77,8 +77,8 @@ func NewTarDriver(args DriverConfig) (Driver, error) {
 	}, nil
 }
 
-func imageFromOCILayout(path string) (pkgutil.Image, error) {
-	img, _, err := pkgutil.ImageFromOCILayout(path)
+func imageFromOCILayout(path, platform string) (pkgutil.Image, error) {
+	img, _, err := pkgutil.ImageFromOCILayout(path, platform)
 	if err != nil {
 		return pkgutil.Image{}, err
 	}

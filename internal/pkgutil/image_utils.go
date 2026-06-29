@@ -18,6 +18,7 @@ package pkgutil
 
 import (
 	"archive/tar"
+	stderrors "errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -204,10 +205,20 @@ func ImageFromV1(img v1.Image, source string) (Image, error) {
 	}, nil
 }
 
+// maxSubIndexes caps how deep findImageInIndex recurses into nested image
+// indexes, guarding against malicious or malformed layouts.
+const maxSubIndexes = 5
+
+// errNoImageFound reports that no descriptor in an index satisfied the
+// requested platform. It is used as a sentinel so recursion can distinguish
+// "this subtree had no match" from a real error.
+var errNoImageFound = stderrors.New("no compatible image found")
+
 // ImageFromOCILayout loads a single image from an OCI image layout directory.
-// It returns the image and its descriptor (for access to annotations).
-// The layout must contain exactly one non-index manifest entry.
-func ImageFromOCILayout(path string) (v1.Image, v1.Descriptor, error) {
+// It returns the image and its descriptor (for access to annotations). The
+// layout must contain exactly one entry. When that entry is a multi-arch image
+// index, the descriptor matching platform (e.g. "linux/amd64") is selected.
+func ImageFromOCILayout(path, platform string) (v1.Image, v1.Descriptor, error) {
 	l, err := layout.ImageIndexFromPath(path)
 	if err != nil {
 		return nil, v1.Descriptor{}, errors.Wrapf(err, "loading %s as OCI layout", path)
@@ -222,7 +233,19 @@ func ImageFromOCILayout(path string) (v1.Image, v1.Descriptor, error) {
 
 	desc := m.Manifests[0]
 	if desc.MediaType.IsIndex() {
-		return nil, v1.Descriptor{}, errors.New("multi-arch images are not supported yet")
+		requirements, err := v1.ParsePlatform(platform)
+		if err != nil {
+			return nil, v1.Descriptor{}, errors.Wrapf(err, "parsing platform %q", platform)
+		}
+		childIndex, err := l.ImageIndex(desc.Digest)
+		if err != nil {
+			return nil, v1.Descriptor{}, errors.Wrapf(err, "reading image index from %s", path)
+		}
+		img, err := findImageInIndex(childIndex, requirements, 0)
+		if err != nil {
+			return nil, v1.Descriptor{}, errors.Wrapf(err, "selecting image for platform %q from %s", platform, path)
+		}
+		return img, desc, nil
 	}
 
 	img, err := l.Image(desc.Digest)
@@ -231,6 +254,45 @@ func ImageFromOCILayout(path string) (v1.Image, v1.Descriptor, error) {
 	}
 
 	return img, desc, nil
+}
+
+// findImageInIndex walks an image index, recursing into nested sub-indexes up
+// to maxSubIndexes deep, and returns the first image whose platform satisfies
+// requirements. Descriptors without a platform field (which OCI permits) are
+// skipped rather than dereferenced, since Descriptor.Platform is a nil-able
+// pointer and Satisfies has a value receiver.
+func findImageInIndex(index v1.ImageIndex, requirements *v1.Platform, depth int) (v1.Image, error) {
+	if depth > maxSubIndexes {
+		return nil, errors.Errorf("too many sub-indexes (>%d)", maxSubIndexes)
+	}
+
+	manifest, err := index.IndexManifest()
+	if err != nil {
+		return nil, errors.Wrap(err, "reading index manifest")
+	}
+
+	for _, desc := range manifest.Manifests {
+		if desc.MediaType.IsImage() {
+			if desc.Platform == nil {
+				continue
+			}
+			if desc.Platform.Satisfies(*requirements) {
+				return index.Image(desc.Digest)
+			}
+		}
+		if desc.MediaType.IsIndex() {
+			childIndex, err := index.ImageIndex(desc.Digest)
+			if err != nil {
+				return nil, err
+			}
+			img, err := findImageInIndex(childIndex, requirements, depth+1)
+			if !stderrors.Is(err, errNoImageFound) {
+				return img, err
+			}
+		}
+	}
+
+	return nil, errNoImageFound
 }
 
 func getExtractPathForName(name string, cacheDir string) (string, error) {

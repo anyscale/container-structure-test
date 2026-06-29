@@ -64,6 +64,95 @@ func writeOCILayout(t *testing.T, imgs ...v1.Image) string {
 	return dir
 }
 
+// platformedImage pairs an image with the platform descriptor it should be
+// indexed under. A nil platform produces an index entry whose Descriptor.Platform
+// is nil, which OCI permits and which must not panic Satisfies.
+type platformedImage struct {
+	img      v1.Image
+	platform *v1.Platform
+}
+
+// writeMultiArchOCILayout writes a single multi-arch image index (built from the
+// given images and platforms) as the sole entry of a fresh OCI layout directory.
+// This mirrors the shape produced by `crane pull --format=oci` of a manifest list.
+func writeMultiArchOCILayout(t *testing.T, entries ...platformedImage) string {
+	t.Helper()
+
+	idx := v1.ImageIndex(empty.Index)
+	for _, e := range entries {
+		add := mutate.IndexAddendum{Add: e.img}
+		if e.platform != nil {
+			add.Descriptor = v1.Descriptor{Platform: e.platform}
+		}
+		idx = mutate.AppendManifests(idx, add)
+	}
+
+	dir := t.TempDir()
+	l, err := layout.Write(dir, empty.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := l.AppendIndex(idx); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func TestImageFromOCILayoutSelectsMatchingPlatform(t *testing.T) {
+	amd64 := testImageWithFile(t, "etc/amd64.txt", "amd64-data")
+	arm64 := testImageWithFile(t, "etc/arm64.txt", "arm64-data")
+	dir := writeMultiArchOCILayout(t,
+		platformedImage{img: amd64, platform: &v1.Platform{OS: "linux", Architecture: "amd64"}},
+		platformedImage{img: arm64, platform: &v1.Platform{OS: "linux", Architecture: "arm64"}},
+	)
+
+	gotImg, _, err := ImageFromOCILayout(dir, "linux/arm64")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wantDigest, err := arm64.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	gotDigest, err := gotImg.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotDigest != wantDigest {
+		t.Fatalf("selected image digest = %v, want arm64 image %v", gotDigest, wantDigest)
+	}
+}
+
+// TestImageFromOCILayoutSkipsNilPlatform guards the nil-deref fix: an index
+// descriptor without a platform field must be skipped rather than passed to the
+// value-receiver Satisfies, which would panic on a nil *v1.Platform.
+func TestImageFromOCILayoutSkipsNilPlatform(t *testing.T) {
+	noPlatform := testImageWithFile(t, "etc/nop.txt", "no-platform-data")
+	amd64 := testImageWithFile(t, "etc/amd64.txt", "amd64-data")
+	dir := writeMultiArchOCILayout(t,
+		platformedImage{img: noPlatform, platform: nil},
+		platformedImage{img: amd64, platform: &v1.Platform{OS: "linux", Architecture: "amd64"}},
+	)
+
+	gotImg, _, err := ImageFromOCILayout(dir, "linux/amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wantDigest, err := amd64.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	gotDigest, err := gotImg.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotDigest != wantDigest {
+		t.Fatalf("selected image digest = %v, want amd64 image %v", gotDigest, wantDigest)
+	}
+}
+
 func TestImageFromV1ExtractsFilesystem(t *testing.T) {
 	img := testImageWithFile(t, "etc/known.txt", "image-data")
 
@@ -100,7 +189,7 @@ func TestImageFromOCILayoutLoadsSingleImage(t *testing.T) {
 	img := testImageWithFile(t, "etc/known.txt", "image-data")
 	dir := writeOCILayout(t, img)
 
-	gotImg, _, err := ImageFromOCILayout(dir)
+	gotImg, _, err := ImageFromOCILayout(dir, "linux/amd64")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +210,7 @@ func TestImageFromOCILayoutLoadsSingleImage(t *testing.T) {
 func TestImageFromOCILayoutMissingPath(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "does-not-exist")
 
-	_, _, err := ImageFromOCILayout(missing)
+	_, _, err := ImageFromOCILayout(missing, "linux/amd64")
 	if err == nil {
 		t.Fatal("ImageFromOCILayout accepted a missing layout path")
 	}
@@ -133,7 +222,7 @@ func TestImageFromOCILayoutRejectsMultipleEntries(t *testing.T) {
 		testImageWithFile(t, "etc/b.txt", "b-data"),
 	)
 
-	_, _, err := ImageFromOCILayout(dir)
+	_, _, err := ImageFromOCILayout(dir, "linux/amd64")
 	if err == nil {
 		t.Fatal("ImageFromOCILayout accepted a layout with multiple entries")
 	}
