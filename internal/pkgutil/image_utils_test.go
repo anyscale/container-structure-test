@@ -1,0 +1,140 @@
+package pkgutil
+
+import (
+	"archive/tar"
+	"bytes"
+	"os"
+	"path/filepath"
+	"testing"
+
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
+	"github.com/google/go-containerregistry/pkg/v1/layout"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
+)
+
+// testImageWithFile builds a single-layer image whose filesystem contains the
+// named file with the given contents.
+func testImageWithFile(t *testing.T, name, body string) v1.Image {
+	t.Helper()
+
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	if err := tw.WriteHeader(&tar.Header{
+		Name: name,
+		Mode: 0644,
+		Size: int64(len(body)),
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tw.Write([]byte(body)); err != nil {
+		t.Fatal(err)
+	}
+	if err := tw.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	layer, err := tarball.LayerFromReader(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, err := mutate.AppendLayers(empty.Image, layer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return img
+}
+
+// writeOCILayout writes the given images into a fresh OCI layout directory and
+// returns its path.
+func writeOCILayout(t *testing.T, imgs ...v1.Image) string {
+	t.Helper()
+
+	dir := t.TempDir()
+	l, err := layout.Write(dir, empty.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, img := range imgs {
+		if err := l.AppendImage(img); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
+func TestImageFromV1ExtractsFilesystem(t *testing.T) {
+	img := testImageWithFile(t, "etc/known.txt", "image-data")
+
+	result, err := ImageFromV1(img, "test-source")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(result.FSPath)
+
+	if result.Source != "test-source" {
+		t.Fatalf("Source = %q, want %q", result.Source, "test-source")
+	}
+	if result.FSPath == "" {
+		t.Fatal("FSPath is empty")
+	}
+	wantDigest, err := img.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Digest != wantDigest {
+		t.Fatalf("Digest = %v, want %v", result.Digest, wantDigest)
+	}
+
+	got, err := os.ReadFile(filepath.Join(result.FSPath, "etc", "known.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != "image-data" {
+		t.Fatalf("extracted file = %q, want %q", got, "image-data")
+	}
+}
+
+func TestImageFromOCILayoutLoadsSingleImage(t *testing.T) {
+	img := testImageWithFile(t, "etc/known.txt", "image-data")
+	dir := writeOCILayout(t, img)
+
+	gotImg, _, err := ImageFromOCILayout(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wantDigest, err := img.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	gotDigest, err := gotImg.Digest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotDigest != wantDigest {
+		t.Fatalf("loaded image digest = %v, want %v", gotDigest, wantDigest)
+	}
+}
+
+func TestImageFromOCILayoutMissingPath(t *testing.T) {
+	missing := filepath.Join(t.TempDir(), "does-not-exist")
+
+	_, _, err := ImageFromOCILayout(missing)
+	if err == nil {
+		t.Fatal("ImageFromOCILayout accepted a missing layout path")
+	}
+}
+
+func TestImageFromOCILayoutRejectsMultipleEntries(t *testing.T) {
+	dir := writeOCILayout(t,
+		testImageWithFile(t, "etc/a.txt", "a-data"),
+		testImageWithFile(t, "etc/b.txt", "b-data"),
+	)
+
+	_, _, err := ImageFromOCILayout(dir)
+	if err == nil {
+		t.Fatal("ImageFromOCILayout accepted a layout with multiple entries")
+	}
+}
