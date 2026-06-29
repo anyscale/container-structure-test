@@ -54,6 +54,7 @@ type ContainerRunOptions struct {
 	CapAdd     []string          `yaml:"capabilities"`
 	CapDrop    []string          `yaml:"drop_capabilities"`
 	BindMounts []string          `yaml:"bindMounts"`
+	Network    string            `yaml:"network"`
 }
 
 func (opts *ContainerRunOptions) IsSet() bool {
@@ -65,7 +66,8 @@ func (opts *ContainerRunOptions) IsSet() bool {
 		(opts.CapAdd != nil && len(opts.CapAdd) > 0) ||
 		(opts.CapDrop != nil && len(opts.CapDrop) > 0) ||
 		(opts.BindMounts != nil && len(opts.BindMounts) > 0) ||
-		len(opts.Sysctls) > 0
+		len(opts.Sysctls) > 0 ||
+		len(opts.Network) != 0
 }
 
 type TestResult struct {

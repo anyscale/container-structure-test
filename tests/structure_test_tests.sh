@@ -144,6 +144,28 @@ else
   echo "PASS: Run options (envFile) test case passed"
 fi
 
+res=$(./out/container-structure-test test --image "$test_image" --config "${test_config_dir}/ubuntu_22_04_containeropts_network_none_test.yaml")
+code=$?
+if ! [[ ("$res" =~ "PASS" && "$code" == "0") ]];
+then
+  echo "FAIL: Run options (network none) test case failed"
+  echo "$res"
+  failures=$((failures +1))
+else
+  echo "PASS: Run options (network none) test case passed"
+fi
+
+res=$(./out/container-structure-test test --image "$test_image" --config "${test_config_dir}/ubuntu_22_04_containeropts_network_host_test.yaml")
+code=$?
+if ! [[ ("$res" =~ "PASS" && "$code" == "0") ]];
+then
+  echo "FAIL: Run options (network host) test case failed"
+  echo "$res"
+  failures=$((failures +1))
+else
+  echo "PASS: Run options (network host) test case passed"
+fi
+
 
 HEADER "Metadata Test Case"
 # test image metadata

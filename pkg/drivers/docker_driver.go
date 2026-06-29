@@ -65,33 +65,25 @@ func NewDockerDriver(args DriverConfig) (Driver, error) {
 }
 
 func (d *DockerDriver) hostConfig() *docker.HostConfig {
-	if d.runOpts.IsSet() && d.runtime != "" {
-		return &docker.HostConfig{
-			CapAdd:       d.runOpts.CapAdd,
-			CapDrop:      d.runOpts.CapDrop,
-			Capabilities: d.runOpts.CapAdd,
-			Binds:        d.runOpts.BindMounts,
-			Privileged:   d.runOpts.Privileged,
-			Sysctls:      d.runOpts.Sysctls,
-			Runtime:      d.runtime,
-		}
-	}
+	var hc *docker.HostConfig
 	if d.runOpts.IsSet() {
-		return &docker.HostConfig{
+		hc = &docker.HostConfig{
 			CapAdd:       d.runOpts.CapAdd,
 			CapDrop:      d.runOpts.CapDrop,
 			Capabilities: d.runOpts.CapAdd,
 			Binds:        d.runOpts.BindMounts,
 			Privileged:   d.runOpts.Privileged,
 			Sysctls:      d.runOpts.Sysctls,
+			NetworkMode:  d.runOpts.Network,
 		}
 	}
 	if d.runtime != "" {
-		return &docker.HostConfig{
-			Runtime: d.runtime,
+		if hc == nil {
+			hc = &docker.HostConfig{}
 		}
+		hc.Runtime = d.runtime
 	}
-	return nil
+	return hc
 }
 
 func (d *DockerDriver) Destroy() {
