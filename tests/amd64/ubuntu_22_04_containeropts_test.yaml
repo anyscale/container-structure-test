@@ -14,7 +14,6 @@ commandTests:
     - "/tmp/test"
   exitCode: 0
 containerRunOptions:
-  privileged: true
   capabilities:
     - "sys_admin"
   drop_capabilities:
