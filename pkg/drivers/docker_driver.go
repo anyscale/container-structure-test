@@ -68,13 +68,16 @@ func (d *DockerDriver) hostConfig() *docker.HostConfig {
 	var hc *docker.HostConfig
 	if d.runOpts.IsSet() {
 		hc = &docker.HostConfig{
-			CapAdd:       d.runOpts.CapAdd,
-			CapDrop:      d.runOpts.CapDrop,
-			Capabilities: d.runOpts.CapAdd,
-			Binds:        d.runOpts.BindMounts,
-			Privileged:   d.runOpts.Privileged,
-			Sysctls:      d.runOpts.Sysctls,
-			NetworkMode:  d.runOpts.Network,
+			// CapAdd/CapDrop are honored on Docker API >=1.40. The legacy
+			// HostConfig.Capabilities field is mutually exclusive with them on
+			// >=1.40 (setting it makes the daemon ignore CapDrop), so it is not
+			// set here; pre-1.40 daemons (Docker <19.03) are not supported.
+			CapAdd:      d.runOpts.CapAdd,
+			CapDrop:     d.runOpts.CapDrop,
+			Binds:       d.runOpts.BindMounts,
+			Privileged:  d.runOpts.Privileged,
+			Sysctls:     d.runOpts.Sysctls,
+			NetworkMode: d.runOpts.Network,
 		}
 	}
 	if d.runtime != "" {
