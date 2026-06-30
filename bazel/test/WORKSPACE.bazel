@@ -16,12 +16,72 @@ http_archive(
     ],
 )
 
+# rules_go + gazelle back the from-source toolchain registered below, which
+# compiles @container_structure_test//cmd/container-structure-test (a go_binary)
+# so the smoke test exercises HEAD's rule against HEAD's binary. The repo itself
+# is bzlmod-only (its root WORKSPACE.bazel is empty), so this WORKSPACE client
+# reconstructs the rules_go/gazelle/go_deps wiring that the root MODULE.bazel
+# provides under bzlmod. The repo name MUST be io_bazel_rules_go: generated Go
+# BUILD files and rules_go internals hard-code that apparent name.
+#
+# Pinned to rules_go 0.55.1 here (bzlmod uses 0.61.1). rules_go 0.61's
+# go/private uses bool_setting(scope = ...), and the build-setting `scope`
+# attribute is only accepted in WORKSPACE mode on Bazel >= 8.3 — it fails on the
+# 8.0.0rc1 CI leg (and on 7.4.1). bzlmod accepts it on all those versions.
+# 0.55.1 predates the `scope` attribute, so it analyzes in WORKSPACE mode across
+# the CI bazel matrix. The skew only affects how the smoke binary is built; both
+# versions produce a binary supporting --test-report-format, which is what the
+# rule under test needs.
+http_archive(
+    name = "io_bazel_rules_go",
+    integrity = "sha256-nXL3uJBBKK+5jUa774KtciPsn/NxjUGa+zVf3dn5SEo=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazel-contrib/rules_go/releases/download/v0.55.1/rules_go-v0.55.1.zip",
+        "https://github.com/bazel-contrib/rules_go/releases/download/v0.55.1/rules_go-v0.55.1.zip",
+    ],
+)
+
+http_archive(
+    name = "bazel_gazelle",
+    integrity = "sha256-SdnrowmwtpWCT/QX1zQkKCStmrXttWBjudNADfGmGlY=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazel-contrib/bazel-gazelle/releases/download/v0.51.3/bazel-gazelle-v0.51.3.tar.gz",
+        "https://github.com/bazel-contrib/bazel-gazelle/releases/download/v0.51.3/bazel-gazelle-v0.51.3.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+# go_deps.bzl is generated from //:go.mod via
+# `bazel run //:gazelle -- update-repos -from_file=go.mod -to_macro=bazel/test/go_deps.bzl%go_dependencies -prune`
+# (regenerate when go.mod changes). It must run before go_rules_dependencies so
+# its go_repository declarations win over rules_go's defaults.
+load("//:go_deps.bzl", "go_dependencies")
+
+# gazelle:repository_macro go_deps.bzl%go_dependencies
+go_dependencies()
+
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.24.12")
+
+# Point gazelle's repo-config scan at this file; the default "@//:WORKSPACE"
+# does not exist because this module uses the WORKSPACE.bazel name.
+gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
+
 local_repository(
     name = "container_structure_test",
     path = "../..",
 )
 
+# Register the from-source toolchain first so toolchain resolution prefers
+# HEAD's go_binary over the downloaded release toolchains registered below.
+# In WORKSPACE mode the earliest matching registration wins, mirroring the
+# bzlmod ordering set up in MODULE.bazel. This makes the smoke test exercise
+# HEAD's rule against HEAD's binary in both module systems.
+register_toolchains("@container_structure_test//bazel:from_source_structure_test_toolchain")
+
 load("@container_structure_test//:repositories.bzl", "container_structure_test_register_toolchain")
 
 container_structure_test_register_toolchain(name = "cst")
-

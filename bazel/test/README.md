@@ -1,38 +1,33 @@
 # Bazel smoke test
 
-Verifies that the container_structure_test bazel rule exposed by this project works properly.
+Verifies that the `container_structure_test` bazel rule exposed by this project
+works properly, exercising HEAD's rule against a from-source build of HEAD's
+binary (`//cmd/container-structure-test`) rather than a downloaded release.
 
-## Running tests with pre-compiled toolchain
+## Running
 
 ```sh
 cd bazel/test
-bazel test ...
-bazel test --enable_bzlmod ...
+bazel test //...                                   # bzlmod (default)
+bazel test //... --enable_bzlmod=false --enable_workspace  # WORKSPACE mode
 ```
 
-## Testing with local changes (non-pre-compiled toolchain)
+Both module systems register the from-source `structure_test_toolchain`
+(`@container_structure_test//bazel:from_source_structure_test_toolchain`) ahead
+of the downloaded release toolchains, so resolution prefers HEAD's binary. This
+means changes to either the rule (`bazel/container_structure_test.bzl`) or the
+Go binary are tested together, with no manual binary-swapping.
 
-When developing changes, you may want to test your modifications before they're compiled a release. Here's how to test with a locally built binary:
+## How the from-source toolchain is wired
 
-1. Build your local binary:
-   ```sh
-   go build -o /tmp/container-structure-test-local ./cmd/container-structure-test/
-   ```
+- **bzlmod**: `MODULE.bazel` brings `rules_go`/`gazelle` and registers the
+  from-source toolchain. Go module deps come from the isolated `go_deps`
+  extension reading the root `//:go.mod`.
+- **WORKSPACE**: `WORKSPACE.bazel` reconstructs the same wiring (the repo itself
+  is bzlmod-only, with an empty root `WORKSPACE.bazel`). Go module deps live in
+  the generated `go_deps.bzl` macro; regenerate it after `go.mod` changes per
+  the header comment in that file.
 
-2. Temporarily modify `bazel/container_structure_test.bzl`:
-   ```sh
-   sed -i.bak 's|readonly st=$(rlocation {st_path})|readonly st="/tmp/container-structure-test-local"|g' bazel/container_structure_test.bzl
-   ```
-
-3. Run the bazel test:
-   ```sh
-   cd bazel/test
-   bazel test :test --test_output=all
-   ```
-
-4. Restore the original rule:
-   ```sh
-   mv bazel/container_structure_test.bzl.bak bazel/container_structure_test.bzl
-   ```
-
-This allows you to verify that your changes work correctly with the bazel integration before submitting them.
+Real consumers do not use the from-source toolchain — they get the downloaded
+release toolchain via `container_structure_test_register_toolchain`
+(`repositories.bzl`) and need no `rules_go`.
