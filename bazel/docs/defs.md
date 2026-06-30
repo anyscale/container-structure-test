@@ -39,6 +39,6 @@ https://github.com/GoogleContainerTools/container-structure-test#running-file-te
 | <a id="container_structure_test-configs"></a>configs |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
 | <a id="container_structure_test-driver"></a>driver |  See https://github.com/GoogleContainerTools/container-structure-test#running-file-tests-without-docker   | String | optional |  `"docker"`  |
 | <a id="container_structure_test-image"></a>image |  Label of an oci_image or oci_tarball target.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
-| <a id="container_structure_test-platform"></a>platform |  Set platform if host is multi-platform capable (default "linux/amd64")   | String | optional |  `"linux/amd64"`  |
+| <a id="container_structure_test-platform"></a>platform |  Set platform if host is multi-platform capable   | String | optional |  `""`  |
 
 

@@ -48,10 +48,13 @@ jobs:
 
     # Ensure the Go code stays buildable and testable via Bazel (rules_go + gazelle).
     # Scoped to the Go packages: //bazel/test is the rule's smoke test (covered by
-    # the dedicated Bazel workflow as its own module) and //bazel/docs is stardoc;
-    # neither is this step's concern.
+    # the dedicated Bazel workflow as its own module).
     - name: Bazel
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         bazel build //cmd/... //pkg/... //internal/... //testutil/...
         bazel test //pkg/... //internal/...
+        # Doc-freshness: //bazel/docs:update_test fails if bazel/docs/defs.md
+        # drifts from the rule. Run `bazel run //bazel/docs:update` to regenerate.
+        bazel build //bazel/docs/...
+        bazel test //bazel/docs:update_test
