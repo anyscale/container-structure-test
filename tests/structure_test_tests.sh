@@ -321,7 +321,7 @@ rm -rf "$tmp"
 
 HEADER "Platform test cases"
 
-docker run --rm --privileged tonistiigi/binfmt --install all > /dev/null
+# Native-platform test runs everywhere; the host arch needs no emulation.
 res=$(./out/container-structure-test test --image "$test_image" --platform="linux/$go_architecture" --config "${test_config_dir}/ubuntu_22_04_test.yaml" 2>&1)
 code=$?
 if ! [[ ("$res" =~ "PASS" && "$code" == "0") ]];
@@ -334,29 +334,36 @@ else
   echo "PASS: current host platform test case"
 fi
 
-res=$(./out/container-structure-test test --image "$test_image" --platform="linux/riscv64" --config "${test_config_dir}/ubuntu_22_04_test.yaml" 2>&1)
-code=$?
-if ! [[ "$res" =~ image\ with\ reference.+was\ found\ but\ its\ platform\ \(linux\/${go_architecture}\)\ does\ not\ match\ the\ specified\ platform\ \(linux\/riscv64\) && "$code" == "1" ]];
-then
-  echo "FAIL: platform failing test case"
-  echo "$res"
-  echo "$code"
-  failures=$((failures +1))
-else
-  echo "PASS: platform failing test case"
-fi
+# Cross-platform (riscv64/s390x) cases need QEMU/binfmt emulation, a multi-platform
+# image store, and assert the Linux daemon's exact error wording. colima's Docker on
+# macOS provides none of these, so these run on Linux only.
+if [[ "$(uname -s)" == "Linux" ]]; then
+  docker run --rm --privileged tonistiigi/binfmt --install all > /dev/null
 
-test_config_dir="${test_dir}/s390x"
-res=$(./out/container-structure-test test --image "$test_image" --platform="linux/s390x" --pull --config "${test_config_dir}/ubuntu_22_04_test.yaml" 2>&1)
-code=$?
-if ! [[ ("$res" =~ "PASS" && "$code" == "0") ]];
-then
-  echo "FAIL: platform w/ --pull test case"
-  echo "$res"
-  echo "$code"
-  failures=$((failures +1))
-else
-  echo "PASS: platform w/ --pull test case"
+  res=$(./out/container-structure-test test --image "$test_image" --platform="linux/riscv64" --config "${test_config_dir}/ubuntu_22_04_test.yaml" 2>&1)
+  code=$?
+  if ! [[ "$res" =~ image\ with\ reference.+was\ found\ but\ its\ platform\ \(linux\/${go_architecture}\)\ does\ not\ match\ the\ specified\ platform\ \(linux\/riscv64\) && "$code" == "1" ]];
+  then
+    echo "FAIL: platform failing test case"
+    echo "$res"
+    echo "$code"
+    failures=$((failures +1))
+  else
+    echo "PASS: platform failing test case"
+  fi
+
+  test_config_dir="${test_dir}/s390x"
+  res=$(./out/container-structure-test test --image "$test_image" --platform="linux/s390x" --pull --config "${test_config_dir}/ubuntu_22_04_test.yaml" 2>&1)
+  code=$?
+  if ! [[ ("$res" =~ "PASS" && "$code" == "0") ]];
+  then
+    echo "FAIL: platform w/ --pull test case"
+    echo "$res"
+    echo "$code"
+    failures=$((failures +1))
+  else
+    echo "PASS: platform w/ --pull test case"
+  fi
 fi
 
 
