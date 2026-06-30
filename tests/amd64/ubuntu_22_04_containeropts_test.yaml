@@ -6,7 +6,9 @@ commandTests:
   expectedOutput:
     - ".*cap_sys_admin.*"
   excludedOutput:
-    - ".*chown.*"
+    # match chown only where it is GRANTED (e.g. ",cap_chown"), not capsh's
+    # "!cap_chown" marker that indicates it was dropped
+    - "[^!]cap_chown"
 - name: "Test bindMounts containerRunOptions"
   command: "test"
   args:
