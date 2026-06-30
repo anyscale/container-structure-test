@@ -32,6 +32,14 @@ jobs:
       if: ${{ runner.os == 'macOS' }}
       uses: douglascamata/setup-docker-macos-action@d5ccc6aae0ce23e7700154f5e63cc53e6433ac48  # v1.1.0
 
+    - name: Point go-dockerclient at colima's socket (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      # The container-structure-test binary uses go-dockerclient, which honors
+      # DOCKER_HOST but NOT the docker CLI context that colima configures. Without
+      # this it falls back to /var/run/docker.sock (absent on colima) and every
+      # docker-driver test fails. Derive the socket from colima's docker context.
+      run: echo "DOCKER_HOST=$(docker context inspect colima -f '{{.Endpoints.docker.Host}}')" >> "$GITHUB_ENV"
+
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
