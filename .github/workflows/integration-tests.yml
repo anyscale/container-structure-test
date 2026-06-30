@@ -17,18 +17,21 @@ jobs:
     name: PR unit tests
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-12]
+        # macos-15-intel is the only GitHub-hosted macOS runner that can run a
+        # Docker daemon: colima needs nested virtualization, which is absent on
+        # Apple Silicon runners (HV_UNSUPPORTED) and gone from retired macos-12/13.
+        os: [ubuntu-latest, macos-15-intel]
       fail-fast: false
     runs-on: ${{ matrix.os }}
-    
+
     steps:
-    - name: start docker
-      if: ${{ matrix.os == 'macos-12' }}
-      run: |
-        brew install docker
-        colima start
-        echo "DOCKER_HOST=unix:///Users/runner/.colima/default/docker.sock" >> $GITHUB_ENV
-        
+    # Installs colima + the Docker CLI and starts the daemon; sets the active
+    # docker context so `docker` works without DOCKER_HOST. macOS-only — the
+    # action's own ARM64 guard exits if it ever lands on an Apple Silicon runner.
+    - name: Set up Docker (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      uses: douglascamata/setup-docker-macos-action@d5ccc6aae0ce23e7700154f5e63cc53e6433ac48  # v1.1.0
+
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
