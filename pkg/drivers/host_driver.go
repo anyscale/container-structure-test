@@ -87,7 +87,7 @@ func (d *HostDriver) SetEnv(envVars []unversioned.EnvVar) error {
 func SetEnvVars(envVars []unversioned.EnvVar) []unversioned.EnvVar {
 	var originalVars []unversioned.EnvVar
 	for _, envVar := range envVars {
-		originalVars = append(originalVars, unversioned.EnvVar{envVar.Key, os.Getenv(envVar.Key), envVar.IsRegex})
+		originalVars = append(originalVars, unversioned.EnvVar{Key: envVar.Key, Value: os.Getenv(envVar.Key), IsRegex: envVar.IsRegex})
 		if err := os.Setenv(envVar.Key, os.ExpandEnv(envVar.Value)); err != nil {
 			logrus.Errorf("Error setting env var: %s", err)
 		}
