@@ -35,8 +35,8 @@ github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4
 github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=
 github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
-github.com/fsouza/go-dockerclient v1.11.2 h1:Wos4OMUwIjOW2rt8Z10TZSJHxgQH0KcYyf3O86dqFII=
-github.com/fsouza/go-dockerclient v1.11.2/go.mod h1:HZN6ky2Mg5mfZO/WZBFDe6XCricqTnDJntfXHZTYnQQ=
+github.com/fsouza/go-dockerclient v1.12.3 h1:CEsX4/msyMEekHAR9Pf8XniZBtwGo0Kl+mLPQ/AnSys=
+github.com/fsouza/go-dockerclient v1.12.3/go.mod h1:gl0t2KUfrsLbm4tw5/ySsJkkFpi7Fz9gXzY2BKLEvZA=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
