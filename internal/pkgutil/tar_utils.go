@@ -65,15 +65,17 @@ func unpackTar(tr *tar.Reader, path string, whitelist []string) error {
 		// if its a dir and it doesn't exist create it
 		case tar.TypeDir:
 			if _, err := os.Lstat(target); os.IsNotExist(err) {
-				if mode.Perm()&(1<<(uint(7))) == 0 {
-					logrus.Debugf("Write permission bit not set on %s by default; setting manually", target)
-					originalMode := mode
-					mode = mode | (1 << uint(7))
-					// keep track of original file permission to reset later
+				// cst inspects the extracted tree as the (often non-root) test user.
+				// A directory missing any owner rwx bit can't be populated during
+				// extraction or traversed during assertions, so force owner rwx while
+				// extracting and record the original mode to restore afterwards.
+				if mode.Perm()&0700 != 0700 {
+					logrus.Debugf("Owner rwx not fully set on %s by default; forcing it for extraction", target)
 					originalPerms = append(originalPerms, OriginalPerm{
 						path: target,
-						perm: originalMode,
+						perm: mode,
 					})
+					mode |= 0700
 				}
 				logrus.Debugf("Creating directory %s with permissions %v", target, mode)
 				if err := os.MkdirAll(target, mode); err != nil {
@@ -171,9 +173,11 @@ func unpackTar(tr *tar.Reader, path string, whitelist []string) error {
 		return resolveError.Load().(error)
 	}
 
-	// reset all original file
+	// Restore each directory's original mode, but keep the owner-execute bit so cst
+	// can still traverse it to inspect its contents. A directory shipped without
+	// owner-execute is therefore reported with that bit set.
 	for _, perm := range originalPerms {
-		if err := os.Chmod(perm.path, perm.perm); err != nil {
+		if err := os.Chmod(perm.path, perm.perm|0100); err != nil {
 			return err
 		}
 	}

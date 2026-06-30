@@ -48,6 +48,16 @@ func testTarDir(name string) func(*tar.Writer) error {
 	}
 }
 
+func testTarDirMode(name string, mode int64) func(*tar.Writer) error {
+	return func(tw *tar.Writer) error {
+		return tw.WriteHeader(&tar.Header{
+			Name:     name,
+			Mode:     mode,
+			Typeflag: tar.TypeDir,
+		})
+	}
+}
+
 func testTarSymlink(name, linkname string) func(*tar.Writer) error {
 	return func(tw *tar.Writer) error {
 		return tw.WriteHeader(&tar.Header{
@@ -153,6 +163,80 @@ func TestUnpackTarRejectsHardlinkSourceSymlinkOutsideRoot(t *testing.T) {
 	}
 	if _, err := os.Lstat(filepath.Join(root, "hard")); !os.IsNotExist(err) {
 		t.Fatalf("hard link path exists after rejected unpack: %v", err)
+	}
+}
+
+func TestUnpackTarReadsFileUnderNonTraversableDir(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root bypasses directory traversal permissions; bug only manifests for the non-root test user")
+	}
+	root := t.TempDir()
+
+	// A directory shipped without the owner execute bit (e.g. /licenses at 0644)
+	// can neither be populated during extraction nor traversed to inspect the
+	// files inside it when running as the non-root test user.
+	err := unpackTar(testTarReader(t,
+		testTarDirMode("licenses", 0644),
+		testTarFile("licenses/copyright", "license-text"),
+	), root, nil)
+	if err != nil {
+		t.Fatalf("unpackTar failed on a file under a non-traversable dir: %v", err)
+	}
+
+	got, err := os.ReadFile(filepath.Join(root, "licenses", "copyright"))
+	if err != nil {
+		t.Fatalf("reading file under non-traversable dir: %v", err)
+	}
+	if string(got) != "license-text" {
+		t.Fatalf("file content = %q, want %q", got, "license-text")
+	}
+}
+
+func TestUnpackTarForcesOwnerExecuteOnNonTraversableDir(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root bypasses directory traversal permissions; bug only manifests for the non-root test user")
+	}
+	root := t.TempDir()
+
+	if err := unpackTar(testTarReader(t,
+		testTarDirMode("licenses", 0644),
+		testTarFile("licenses/copyright", "license-text"),
+	), root, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	// Owner-execute is forced on so cst can traverse the dir to inspect its
+	// contents; the remaining shipped bits are preserved (0644 -> 0744).
+	info, err := os.Lstat(filepath.Join(root, "licenses"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := info.Mode().Perm(); got != 0744 {
+		t.Fatalf("non-traversable dir reported mode = %o, want 0744", got)
+	}
+}
+
+func TestUnpackTarPreservesModeOfTraversableDir(t *testing.T) {
+	root := t.TempDir()
+	// Runs before TempDir's own RemoveAll (cleanups are LIFO): make the write-less
+	// dir writable again so the non-root test user can unlink its contents.
+	t.Cleanup(func() { _ = os.Chmod(filepath.Join(root, "app"), 0755) })
+
+	// A write-less but already-traversable directory (0555) is the common case
+	// the temp-permission logic exists for; its mode must round-trip exactly.
+	if err := unpackTar(testTarReader(t,
+		testTarDirMode("app", 0555),
+		testTarFile("app/run", "bin"),
+	), root, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	info, err := os.Lstat(filepath.Join(root, "app"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := info.Mode().Perm(); got != 0555 {
+		t.Fatalf("traversable dir reported mode = %o, want 0555", got)
 	}
 }
 
