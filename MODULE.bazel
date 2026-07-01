@@ -33,6 +33,12 @@ bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True, repo_name 
 bazel_dep(name = "rules_go", version = "0.61.1", repo_name = "io_bazel_rules_go")
 bazel_dep(name = "gazelle", version = "0.51.3")
 
+# go-dockerclient v1.13.2 declares `go 1.25.5`; pin the SDK so bazel's go_deps
+# fetch/build satisfies that directive (rules_go 0.61.1 otherwise defaults to
+# go 1.25.0, which fails with "requires go >= 1.25.5").
+go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.25.5")
+
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps", isolate = True)
 go_deps.from_file(go_mod = "//:go.mod")
 

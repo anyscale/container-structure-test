@@ -64,7 +64,7 @@ go_dependencies()
 
 go_rules_dependencies()
 
-go_register_toolchains(version = "1.24.12")
+go_register_toolchains(version = "1.25.5")
 
 # Point gazelle's repo-config scan at this file; the default "@//:WORKSPACE"
 # does not exist because this module uses the WORKSPACE.bazel name.
