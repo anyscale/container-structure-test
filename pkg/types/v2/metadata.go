@@ -180,14 +180,14 @@ func (mt MetadataTest) Run(driver drivers.Driver) *types.TestResult {
 	}
 
 	for _, port := range mt.ExposedPorts {
-		if !utils.ValueInList(port, imageConfig.ExposedPorts) {
+		if !utils.PortInList(port, imageConfig.ExposedPorts) {
 			result.Errorf("Port %s not found in config", port)
 			result.Fail()
 		}
 	}
 
 	for _, port := range mt.UnexposedPorts {
-		if utils.ValueInList(port, imageConfig.ExposedPorts) {
+		if utils.PortInList(port, imageConfig.ExposedPorts) {
 			result.Errorf("Port %s should not be exposed", port)
 			result.Fail()
 		}

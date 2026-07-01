@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -71,6 +72,47 @@ func UserConfirmation(message string, force bool) bool {
 func ValueInList(target string, list []string) bool {
 	for _, value := range list {
 		if target == value {
+			return true
+		}
+	}
+	return false
+}
+
+// PortInList checks if a port matches any port in the list, accounting for protocols.
+// A port can match in the following ways:
+// - exact match: "53/tcp" matches "53/tcp"
+// - bare port matches any protocol: "53" matches "53/tcp" or "53/udp"
+// - specific protocol must match: "53/udp" only matches "53/udp", not "53/tcp"
+func PortInList(target string, list []string) bool {
+	// Split target into port and protocol
+	targetParts := strings.Split(target, "/")
+	targetPort := targetParts[0]
+	targetProto := ""
+	if len(targetParts) > 1 {
+		targetProto = targetParts[1]
+	}
+
+	for _, value := range list {
+		// Split list value into port and protocol
+		valueParts := strings.Split(value, "/")
+		valuePort := valueParts[0]
+		valueProto := ""
+		if len(valueParts) > 1 {
+			valueProto = valueParts[1]
+		}
+
+		// Check if ports match
+		if targetPort != valuePort {
+			continue
+		}
+
+		// If target has no protocol (bare port), match any protocol
+		if targetProto == "" {
+			return true
+		}
+
+		// If target has protocol, must match exactly
+		if targetProto == valueProto {
 			return true
 		}
 	}

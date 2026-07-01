@@ -15,17 +15,15 @@
 package drivers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/fs"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"bytes"
 
 	"github.com/GoogleContainerTools/container-structure-test/pkg/types/unversioned"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -183,8 +181,8 @@ func (d *HostDriver) GetConfig() (unversioned.Config, error) {
 
 	ports := []string{}
 	for p := range config.ExposedPorts {
-		// docker always appends the protocol to the port, so this is safe
-		ports = append(ports, strings.Split(p, "/")[0])
+		// docker always appends the protocol to the port. preserve it for matching.
+		ports = append(ports, p)
 	}
 
 	return unversioned.Config{

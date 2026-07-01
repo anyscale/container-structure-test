@@ -467,7 +467,7 @@ func (d *DockerDriver) GetConfig() (unversioned.Config, error) {
 
 	ports := []string{}
 	for p := range img.Config.ExposedPorts {
-		ports = append(ports, p.Port())
+		ports = append(ports, string(p))
 	}
 
 	return unversioned.Config{
