@@ -27,7 +27,6 @@ https://github.com/GoogleContainerTools/container-structure-test#running-file-te
     test = True,
     toolchains = [
         "@aspect_bazel_lib//lib:jq_toolchain_type",
-        "@bazel_tools//tools/sh:toolchain_type",
         "@container_structure_test//bazel:structure_test_toolchain_type",
     ],
 )
