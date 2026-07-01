@@ -115,8 +115,18 @@ func unpackTar(tr *tar.Reader, path string, whitelist []string) error {
 			}
 			// manually set permissions on file, since the default umask (022) will interfere
 			if err = os.Chmod(target, mode); err != nil {
-				logrus.Errorf("Error updating file permissions on %s", target)
-				return err
+				// Non-root users on some platforms (notably macOS/BSD) cannot set the
+				// setuid/setgid/sticky bits via chmod. cst inspects the extracted tree
+				// as that user, so retry without those bits rather than aborting
+				// extraction. Where the OS permits them (e.g. Linux) the first chmod
+				// succeeds and the bits are preserved.
+				if base := mode &^ (os.ModeSetuid | os.ModeSetgid | os.ModeSticky); base != mode {
+					err = os.Chmod(target, base)
+				}
+				if err != nil {
+					logrus.Errorf("Error updating file permissions on %s", target)
+					return err
+				}
 			}
 			_, err = io.Copy(currFile, tr)
 			if err != nil {

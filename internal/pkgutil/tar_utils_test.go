@@ -240,6 +240,44 @@ func TestUnpackTarPreservesModeOfTraversableDir(t *testing.T) {
 	}
 }
 
+func TestUnpackTarExtractsSetuidFile(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can set setuid unconditionally; the bug only manifests for the non-root test user")
+	}
+	root := t.TempDir()
+
+	// A setuid regular file (e.g. /usr/bin/chfn) must extract successfully. On
+	// platforms where a non-root user cannot chmod the setuid bit (macOS/BSD),
+	// the initial chmod fails and the graceful fallback re-chmods without the
+	// special bits instead of aborting. On Linux the first chmod succeeds and the
+	// bit is preserved. Either way, extraction must not error and the file must be
+	// readable so tests inside such an image can run.
+	err := unpackTar(testTarReader(t, func(tw *tar.Writer) error {
+		body := "bin"
+		if err := tw.WriteHeader(&tar.Header{
+			Name:     "usr/bin/chfn",
+			Mode:     04755, // setuid
+			Size:     int64(len(body)),
+			Typeflag: tar.TypeReg,
+		}); err != nil {
+			return err
+		}
+		_, err := tw.Write([]byte(body))
+		return err
+	}), root, nil)
+	if err != nil {
+		t.Fatalf("unpackTar failed on a setuid file: %v", err)
+	}
+
+	got, err := os.ReadFile(filepath.Join(root, "usr", "bin", "chfn"))
+	if err != nil {
+		t.Fatalf("reading extracted setuid file: %v", err)
+	}
+	if string(got) != "bin" {
+		t.Fatalf("setuid file content = %q, want %q", got, "bin")
+	}
+}
+
 func TestUnpackTarResolvesSymlinksWithinRoot(t *testing.T) {
 	root := t.TempDir()
 
