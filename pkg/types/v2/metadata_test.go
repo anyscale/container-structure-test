@@ -137,3 +137,74 @@ func TestExposedPortsWithProtocol(t *testing.T) {
 		})
 	}
 }
+
+func TestUnexposedPortsWithProtocol(t *testing.T) {
+	tests := []struct {
+		name               string
+		imageExposedPorts  []string
+		testUnexposedPorts []string
+		shouldPass         bool
+	}{
+		{
+			name:               "port not exposed with exact protocol",
+			imageExposedPorts:  []string{"8080/tcp", "9000/tcp"},
+			testUnexposedPorts: []string{"53/tcp"},
+			shouldPass:         true,
+		},
+		{
+			name:               "bare port not exposed",
+			imageExposedPorts:  []string{"8080/tcp", "9000/tcp"},
+			testUnexposedPorts: []string{"53"},
+			shouldPass:         true,
+		},
+		{
+			name:               "bare port exposed fails test",
+			imageExposedPorts:  []string{"53/tcp", "8080/tcp"},
+			testUnexposedPorts: []string{"53"},
+			shouldPass:         false,
+		},
+		{
+			name:               "exact protocol port exposed fails test",
+			imageExposedPorts:  []string{"53/tcp", "8080/tcp"},
+			testUnexposedPorts: []string{"53/tcp"},
+			shouldPass:         false,
+		},
+		{
+			name:               "protocol mismatch passes unexposed test",
+			imageExposedPorts:  []string{"53/tcp", "8080/tcp"},
+			testUnexposedPorts: []string{"53/udp"},
+			shouldPass:         true,
+		},
+		{
+			name:               "multiple unexposed ports when only some exposed",
+			imageExposedPorts:  []string{"53/tcp", "8080/tcp"},
+			testUnexposedPorts: []string{"53/udp", "9000/tcp"},
+			shouldPass:         true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDrv := &mockDriver{
+				config: &types.Config{
+					Env:          map[string]string{},
+					ExposedPorts: tt.imageExposedPorts,
+					Labels:       map[string]string{},
+				},
+			}
+
+			metadataTest := MetadataTest{
+				UnexposedPorts: tt.testUnexposedPorts,
+			}
+
+			result := metadataTest.Run(mockDrv)
+
+			if tt.shouldPass && !result.IsPass() {
+				t.Errorf("expected test to pass but got errors: %v", result.Errors)
+			}
+			if !tt.shouldPass && result.IsPass() {
+				t.Errorf("expected test to fail but it passed")
+			}
+		})
+	}
+}
