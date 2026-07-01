@@ -82,7 +82,12 @@ func convertSliceToMap(slice []string) map[string]string {
 	res := make(map[string]string)
 	for _, slicePair := range slice {
 		pair := strings.SplitN(slicePair, "=", 2)
-		res[pair[0]] = pair[1]
+		key := pair[0]
+		value := ""
+		if len(pair) > 1 {
+			value = pair[1]
+		}
+		res[key] = value
 	}
 	return res
 }
