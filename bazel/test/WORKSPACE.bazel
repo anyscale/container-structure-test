@@ -24,20 +24,22 @@ http_archive(
 # provides under bzlmod. The repo name MUST be io_bazel_rules_go: generated Go
 # BUILD files and rules_go internals hard-code that apparent name.
 #
-# Pinned to rules_go 0.55.1 here (bzlmod uses 0.61.1). rules_go 0.61's
-# go/private uses bool_setting(scope = ...), and the build-setting `scope`
-# attribute is only accepted in WORKSPACE mode on Bazel >= 8.3 — it fails on the
-# 8.0.0rc1 CI leg (and on 7.4.1). bzlmod accepts it on all those versions.
-# 0.55.1 predates the `scope` attribute, so it analyzes in WORKSPACE mode across
-# the CI bazel matrix. The skew only affects how the smoke binary is built; both
-# versions produce a binary supporting --test-report-format, which is what the
+# Pinned to rules_go 0.60.0 here (bzlmod uses 0.61.1). The version is bounded on
+# both sides: rules_go 0.55.1 fails to build the go 1.25.5 stdlib because it
+# still sets the `coverageredesign` GOEXPERIMENT that go 1.25 removed (fixed in
+# rules_go 0.56.0); and rules_go 0.61.1+ use bool_setting(scope = ...) in
+# go/private, whose `scope` attribute is only accepted in WORKSPACE mode on Bazel
+# >= 8.3, breaking the 7.4.1 and 8.0.0 legs. 0.60.0 is the newest release in that
+# window: it supports go 1.25.5 and still analyzes in WORKSPACE mode across the CI
+# bazel matrix. The skew from bzlmod's 0.61.1 only affects how the smoke binary is
+# built; both produce a binary supporting --test-report-format, which is what the
 # rule under test needs.
 http_archive(
     name = "io_bazel_rules_go",
-    integrity = "sha256-nXL3uJBBKK+5jUa774KtciPsn/NxjUGa+zVf3dn5SEo=",
+    integrity = "sha256-htPcj1nSU1JPkzqvLzwFiWywtgX8NbRgwLSwOZlhJMY=",
     urls = [
-        "https://mirror.bazel.build/github.com/bazel-contrib/rules_go/releases/download/v0.55.1/rules_go-v0.55.1.zip",
-        "https://github.com/bazel-contrib/rules_go/releases/download/v0.55.1/rules_go-v0.55.1.zip",
+        "https://mirror.bazel.build/github.com/bazel-contrib/rules_go/releases/download/v0.60.0/rules_go-v0.60.0.zip",
+        "https://github.com/bazel-contrib/rules_go/releases/download/v0.60.0/rules_go-v0.60.0.zip",
     ],
 )
 
