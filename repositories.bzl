@@ -8,15 +8,15 @@ load("//bazel:toolchains_repo.bzl", "PLATFORMS", "toolchains_repo")
 # bazel build @structure_test_st_darwin_amd64//... @structure_test_st_darwin_arm64//... @structure_test_st_linux_arm64//... \
 # @structure_test_st_linux_s390x//...  @structure_test_st_linux_amd64//... @structure_test_st_windows_amd64//...
 
-_VERSION="v1.22.0"
+_VERSION="v1.22.1-anyscale.1"
 _HASHES = {
-    "darwin-amd64": "sha256-wABR53ZRgR9vh3Mxt4xCshURf3ut01fHVoje6S+vT40=",
-    "darwin-arm64": "sha256-OEN4h1ayg8IZH9pkLbmT/QWEn69cToD6OIQe3t9+/Xg=",
-    "linux-amd64": "sha256-V83hq8ep3aA0sXPAgS9TfCC4c0we/KBpzCVwtcWWrQ0=",
-    "linux-arm64": "sha256-xFjdCQPTbheH/gLr1gnpp4R/JMmr60ciAlCYfVHem/4=",
-    "linux-ppc64le": "sha256-zpSQgf3nIoh8U0jTJM3bKEilPypHhmxC6R5rLUMZt4g=",
-    "linux-s390x": "sha256-X8HzzYXDY2p/lM2iAOIoHeiA3BWxfkQ5OlqVNrpDzDQ=",
-    "windows-amd64.exe": "sha256-B915GXXU7po5vAVn1uLicVC0/SqcLGZoqOzuUkDd7Qg=",
+    "darwin-amd64": "sha256-WH4DF1Y8EGTd6nkuhh+rl+lzJPlB2DY5A5M9MJnzj0s=",
+    "darwin-arm64": "sha256-XrnV7GQK/2gdsVZIs74FI4iHxyy7BHGWzOPGJVeSQpI=",
+    "linux-amd64": "sha256-tOFM7FSoxvJ/jgt5YGQDf27+QViAmisrvjjQeA/MMjE=",
+    "linux-arm64": "sha256-7DYX41WKR0jucqrxG6N8ynofU1CvRE8I+92mAZnK5Hk=",
+    "linux-ppc64le": "sha256-vPwaSwbpnddJl9Qsqsxnj79oBKKxSgcXrTr4Mm/zy2k=",
+    "linux-s390x": "sha256-URcyskNnRZbcFcg5QmEPg4PjNTuNeyaX6vCp9fRWS0I=",
+    "windows-amd64.exe": "sha256-C+2E7AjA1f61SezKE4HWxGT6n9SQykPLBfN34+LxDyY=",
 }
 
 STRUCTURE_TEST_BUILD_TMPL = """\
@@ -33,7 +33,7 @@ def _structure_test_repo_impl(repository_ctx):
 
     if platform.find("windows") != -1:
         platform = platform + ".exe"
-    url = "https://github.com/GoogleContainerTools/container-structure-test/releases/download/{version}/container-structure-test-{platform}".format(
+    url = "https://github.com/anyscale/container-structure-test/releases/download/{version}/container-structure-test-{platform}".format(
         version = _VERSION,
         platform = platform,
     )
