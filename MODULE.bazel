@@ -42,6 +42,14 @@ go_sdk.download(version = "1.25.5")
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps", isolate = True)
 go_deps.from_file(go_mod = "//:go.mod")
 
+# Docker ships a pre-generated plugin.pb.go. Disabling proto rule generation for
+# the module makes gazelle use that checked-in Go source instead of recompiling
+# the .proto via protoc, which would otherwise pull in the protobuf C++ toolchain.
+go_deps.gazelle_override(
+    directives = ["gazelle:proto disable_global"],
+    path = "github.com/docker/docker",
+)
+
 # All *direct* Go dependencies of the module have to be listed explicitly.
 use_repo(
     go_deps,
