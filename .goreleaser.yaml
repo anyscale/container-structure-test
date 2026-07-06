@@ -1,3 +1,5 @@
+version: 2
+
 project_name: container-structure-test
 
 builds:
@@ -29,28 +31,5 @@ checksum:
   name_template: "checksums.txt"
 
 archives:
-  - format: binary
+  - formats: [binary]
     name_template: "{{ .Binary }}"
-
-kos:
-  - repository: ghcr.io/googlecontainertools/container-structure-test
-    base_image: ubuntu:22.04
-    tags:
-      - '{{.Version}}'
-      - latest
-    bare: true
-    preserve_import_paths: false
-    platforms:
-      - linux/amd64
-      - linux/arm64
-    ldflags:
-      - -X github.com/GoogleContainerTools/container-structure-test/pkg/version.version=12
-      - -X github.com/GoogleContainerTools/container-structure-test/pkg/version.buildDate={{.Date}}
-      - -X github.com/GoogleContainerTools/container-structure-test/pkg/version.builtBy=goreleaser
-      - -X github.com/GoogleContainerTools/container-structure-test/pkg/version.commit={{.Commit}}
-
-release:
-  footer: |
-    ## Container Images
-
-    `ghcr.io/googlecontainertools/container-structure-test:{{.Version}}`
