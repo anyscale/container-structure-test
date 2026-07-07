@@ -31,9 +31,8 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/daemon"
-	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
@@ -219,7 +218,7 @@ var errNoImageFound = stderrors.New("no compatible image found")
 // layout must contain exactly one entry. When that entry is a multi-arch image
 // index, the descriptor matching platform (e.g. "linux/amd64") is selected.
 func ImageFromOCILayout(path, platform string) (v1.Image, v1.Descriptor, error) {
-	l, err := layout.ImageIndexFromPath(path)
+	l, err := openOCILayout(path)
 	if err != nil {
 		return nil, v1.Descriptor{}, errors.Wrapf(err, "loading %s as OCI layout", path)
 	}

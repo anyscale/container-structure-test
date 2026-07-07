@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "fs_utils.go",
         "image_utils.go",
+        "oci_layout.go",
         "root_path.go",
         "tar_utils.go",
         "transport_builder.go",
@@ -16,10 +17,11 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/name",
         "@com_github_google_go_containerregistry//pkg/v1:pkg",
         "@com_github_google_go_containerregistry//pkg/v1/daemon",
-        "@com_github_google_go_containerregistry//pkg/v1/layout",
         "@com_github_google_go_containerregistry//pkg/v1/mutate",
+        "@com_github_google_go_containerregistry//pkg/v1/partial",
         "@com_github_google_go_containerregistry//pkg/v1/remote",
         "@com_github_google_go_containerregistry//pkg/v1/tarball",
+        "@com_github_google_go_containerregistry//pkg/v1/types",
         "@com_github_moby_sys_sequential//:sequential",
         "@com_github_pkg_errors//:errors",
         "@com_github_sirupsen_logrus//:logrus",
@@ -39,5 +41,6 @@ go_test(
         "@com_github_google_go_containerregistry//pkg/v1/layout",
         "@com_github_google_go_containerregistry//pkg/v1/mutate",
         "@com_github_google_go_containerregistry//pkg/v1/tarball",
+        "@com_github_google_go_containerregistry//pkg/v1/validate",
     ],
 )
