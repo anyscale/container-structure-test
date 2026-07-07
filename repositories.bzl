@@ -8,15 +8,15 @@ load("//bazel:toolchains_repo.bzl", "PLATFORMS", "toolchains_repo")
 # bazel build @structure_test_st_darwin_amd64//... @structure_test_st_darwin_arm64//... @structure_test_st_linux_arm64//... \
 # @structure_test_st_linux_s390x//...  @structure_test_st_linux_amd64//... @structure_test_st_windows_amd64//...
 
-_VERSION="v1.22.1-anyscale.2"
+_VERSION="v1.22.1-anyscale.3"
 _HASHES = {
-    "darwin-amd64": "sha256-7hzIUaYGwMrl5biJu5bxaAOTViet33knE3zZpPqTCfU=",
-    "darwin-arm64": "sha256-OerQ8tboEcsU6lUpKdAmUPKwjHInanVkGUf+Z0C6Svo=",
-    "linux-amd64": "sha256-wKdBTxtPmqpfu+bnI1AJwi/lpWU5VELrNmqzbuejsy4=",
-    "linux-arm64": "sha256-g34mqpR6aEIYdRE15eIu0i2DF7SOIsopYdJ9EZAEn40=",
-    "linux-ppc64le": "sha256-9uGKekm/lMXwqx3+lrSWYDPfjl8Ea6Ur5l+c7iP5Kpo=",
-    "linux-s390x": "sha256-mTP6WgdbvreS7TYLVA1lAV7wHLFytPlBU+78IaIjTqA=",
-    "windows-amd64.exe": "sha256-rtSyg6uy84kw+Hgsw07NhllNu94+giMEoO8R0UJFHok=",
+    "darwin-amd64": "sha256-hLD0VyjI033rrpm5LGJSnnw6wmOG11Ha8dTEWguvAYg=",
+    "darwin-arm64": "sha256-IvXIOSiR2XWf/1yqyOJvwnS0xsy1pozQR0BWbgrazUY=",
+    "linux-amd64": "sha256-Dkai4UDCXqbXavChpTArjb18lVsIsJurEKMLMzEyOFA=",
+    "linux-arm64": "sha256-de5Cf26rKDX+mqrspmhH6WtE7vPUvOA3jBOy1HMwxPo=",
+    "linux-ppc64le": "sha256-6GjboIFMeL7zGpenTOcCkxW8JL5X1uJiokBnRc2jwEE=",
+    "linux-s390x": "sha256-+RMbl/UXD0cHFHiIuO3YrQqNoC8XgJcfEmHGDeoO5Ro=",
+    "windows-amd64.exe": "sha256-XOt1YKq3G+yJ7wb8Rw5Sp5u4i7TSuIFLy1KnWtMhWd4=",
 }
 
 STRUCTURE_TEST_BUILD_TMPL = """\
