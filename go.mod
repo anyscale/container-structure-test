@@ -10,7 +10,7 @@ require (
 	github.com/moby/sys/sequential v0.7.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.54.0
 	gopkg.in/yaml.v2 v2.4.0
