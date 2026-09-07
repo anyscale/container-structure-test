@@ -1,6 +1,6 @@
 module github.com/GoogleContainerTools/container-structure-test
 
-go 1.25.5
+go 1.26.0
 
 require (
 	github.com/fsouza/go-dockerclient v1.13.2
@@ -12,7 +12,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/crypto v0.54.0
+	golang.org/x/crypto v0.56.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
