@@ -28,7 +28,9 @@ CMD_HEAD = [
     BASH_RLOCATION_FUNCTION,
 ]
 
-CMD = """\
+# Under the docker driver, an OCI layout is loaded into the daemon under a
+# digest-derived tag, which is removed again on exit.
+DOCKER_CMD = """\
 readonly st=$(rlocation {st_path})
 readonly jq=$(rlocation {jq_path})
 readonly image=$(rlocation {image_path})
@@ -49,6 +51,12 @@ if [[ -d "$image" ]]; then
 else
   exec "$st" test --driver {driver} {fixed_args} "$@"
 fi
+"""
+
+EXEC_CMD = """\
+readonly st=$(rlocation {st_path})
+
+exec "$st" test --driver {driver} {fixed_args} "$@"
 """
 
 def _structure_test_impl(ctx):
@@ -97,11 +105,16 @@ def _structure_test_impl(ctx):
     # Prefer to use a tarball if we are given one, as it works with more 'driver' types.
     if image_path.endswith(".tar"):
         fixed_args.extend(["--image", "$(rlocation %s)" % image_path])
-    else:
-        # https://github.com/GoogleContainerTools/container-structure-test/blob/5e347b66fcd06325e3caac75ef7dc999f1a9b614/cmd/container-structure-test/app/cmd/test.go#L110
-        if ctx.attr.driver != "docker":
-            fail("when the 'driver' attribute is not 'docker', then the image must be a .tar file")
+    elif ctx.attr.driver == "docker":
         fixed_args.extend(["--ignore-ref-annotation", "--image-from-oci-layout", "$(rlocation %s)" % image_path])
+    elif ctx.attr.driver == "tar" and image.is_directory:
+        # The tar driver reads the layout in place; nothing is loaded into a daemon.
+        fixed_args.extend(["--image-from-oci-layout", "$(rlocation %s)" % image_path])
+    elif ctx.attr.driver == "tar":
+        fail("the 'tar' driver needs 'image' to be a .tar file or an OCI layout directory, got %s" % image.short_path)
+    else:
+        # The binary accepts --image-from-oci-layout only with the docker and tar drivers.
+        fail("the '%s' driver needs 'image' to be a .tar file, got %s" % (ctx.attr.driver, image.short_path))
 
     for arg in ctx.files.configs:
         fixed_args.extend(["--config", "$(rlocation %s)" % to_rlocation_path(ctx, arg)])
@@ -109,10 +122,11 @@ def _structure_test_impl(ctx):
     if ctx.attr.platform:
         fixed_args.extend(["--platform", ctx.attr.platform])
 
+    cmd = DOCKER_CMD if ctx.attr.driver == "docker" else EXEC_CMD
     bash_launcher = ctx.actions.declare_file("%s.sh" % ctx.label.name)
     ctx.actions.write(
         bash_launcher,
-        content = "\n".join(CMD_HEAD) + CMD.format(
+        content = "\n".join(CMD_HEAD) + cmd.format(
             st_path = to_rlocation_path(ctx, test_bin),
             jq_path = to_rlocation_path(ctx, jq_bin),
             driver = ctx.attr.driver,

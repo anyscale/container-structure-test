@@ -13,6 +13,10 @@ bazel_dep(name = "container_structure_test", version = "0.0.0")
 # such as --@io_bazel_rules_go//go/config:pure resolve in this root module.
 bazel_dep(name = "rules_go", version = "0.61.1", repo_name = "io_bazel_rules_go")
 
+# Builds an OCI layout directory to exercise the tar driver's
+# --image-from-oci-layout path.
+bazel_dep(name = "rules_oci", version = "2.3.0")
+
 local_path_override(
     module_name = "container_structure_test",
     path = "../..",

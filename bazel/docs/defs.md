@@ -30,6 +30,9 @@ simply add `test --test_env=DOCKER_HOST` into the `.bazelrc` file.
 Alternatively, use the `driver = "tar"` attribute to avoid the need for a container runtime, see
 https://github.com/GoogleContainerTools/container-structure-test#running-file-tests-without-docker
 
+With `driver = "tar"`, `image` may be a `.tar` file or an OCI layout directory such as an `oci_image`
+target, which is read in place without building a tarball. Command tests require the docker driver.
+
 **ATTRIBUTES**
 
 

@@ -1,0 +1,19 @@
+schemaVersion: "2.0.0"
+
+metadataTest:
+  envVars:
+    - key: "ENV"
+      value: "/test"
+  entrypoint: ["/custom_bin"]
+  cmd: ["--arg1"]
+
+fileExistenceTests:
+  - name: "layer file"
+    path: "/etc/cst-smoke"
+    shouldExist: true
+    permissions: "-rw-r--r--"
+
+fileContentTests:
+  - name: "layer file content"
+    path: "/etc/cst-smoke"
+    expectedContents: ["^hello from an oci layout\n$"]
