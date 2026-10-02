@@ -11,7 +11,7 @@ bazel_dep(name = "container_structure_test", version = "0.0.0")
 # @container_structure_test//cmd/container-structure-test, a go_binary. rules_go
 # must be visible under its io_bazel_rules_go apparent name so Go build settings
 # such as --@io_bazel_rules_go//go/config:pure resolve in this root module.
-bazel_dep(name = "rules_go", version = "0.61.1", repo_name = "io_bazel_rules_go")
+bazel_dep(name = "rules_go", version = "0.63.0", repo_name = "io_bazel_rules_go")
 
 # Builds an OCI layout directory to exercise the tar driver's
 # --image-from-oci-layout path.
