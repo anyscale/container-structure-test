@@ -30,8 +30,8 @@ register_toolchains("@structure_test_toolchains//:all")
 # 0.5.4 is the first version with bzlmod support
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True, repo_name = "io_bazel_stardoc")
 
-# Non-dev bazel_deps set a floor on every consumer's resolved version (MVS):
-# anyscale/product resolves at least these once it bumps its git_override.
+# Non-dev bazel_deps set a floor on every consumer's resolved version (MVS), so
+# bumping one here moves downstream modules that depend on this one.
 bazel_dep(name = "rules_go", version = "0.63.0", repo_name = "io_bazel_rules_go")
 bazel_dep(name = "gazelle", version = "0.52.2")
 
