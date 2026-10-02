@@ -2,6 +2,8 @@ module github.com/GoogleContainerTools/container-structure-test
 
 go 1.26.0
 
+toolchain go1.27.1
+
 require (
 	github.com/fsouza/go-dockerclient v1.13.3
 	github.com/google/go-cmp v0.7.0
