@@ -16,8 +16,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-exclude github.com/docker/docker v24.0.6+incompatible // indirect
-
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
