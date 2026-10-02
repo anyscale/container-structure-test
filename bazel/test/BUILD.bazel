@@ -1,8 +1,28 @@
 load("@container_structure_test//:defs.bzl", "container_structure_test")
+load("@rules_oci//oci:defs.bzl", "oci_image")
 
 container_structure_test(
     name = "test",
     configs = ["test.yaml"],
     driver = "tar",
     image = "tarball.tar",
+)
+
+# An oci_image output is an OCI layout directory, not a tarball, so this
+# exercises the tar driver's --image-from-oci-layout path.
+oci_image(
+    name = "layout_image",
+    architecture = "amd64",
+    cmd = ["--arg1"],
+    entrypoint = ["/custom_bin"],
+    env = {"ENV": "/test"},
+    os = "linux",
+    tars = ["layer.tar"],
+)
+
+container_structure_test(
+    name = "layout_test",
+    configs = ["layout_test.yaml"],
+    driver = "tar",
+    image = ":layout_image",
 )
