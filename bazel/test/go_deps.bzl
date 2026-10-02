@@ -7,11 +7,8 @@
 #   bazel run //:gazelle -- update-repos -from_file=go.mod \
 #     -to_macro=bazel/test/go_deps.bzl%go_dependencies -prune
 #
-# After regenerating, reapply two manual edits gazelle does not emit:
-#   1. the load() below must reference @bazel_gazelle (WORKSPACE repo name),
-#      not @gazelle (the bzlmod apparent name).
-#   2. the com_github_docker_docker entry needs
-#      build_directives = ["gazelle:proto disable_global"] (see below).
+# The load() below must reference @bazel_gazelle (WORKSPACE repo name), not
+# @gazelle (the bzlmod apparent name).
 load("@bazel_gazelle//:deps.bzl", "go_repository")
 
 def go_dependencies():
@@ -273,18 +270,6 @@ def go_dependencies():
         importpath = "github.com/docker/distribution",
         sum = "h1:AtKxIZ36LoNK51+Z6RpzLpddBirtxJnzDrHLEKxTAYk=",
         version = "v2.8.3+incompatible",
-    )
-    go_repository(
-        name = "com_github_docker_docker",
-        # Docker ships a pre-generated plugin.pb.go. Disabling proto rule
-        # generation makes gazelle use that checked-in Go source instead of
-        # recompiling the .proto via protoc, which would otherwise pull in the
-        # protobuf C++ toolchain. Mirrors the gazelle_override in the root
-        # MODULE.bazel for the bzlmod build.
-        build_directives = ["gazelle:proto disable_global"],
-        importpath = "github.com/docker/docker",
-        sum = "h1:DBX0Y0zAjZbSrm1uzOkdr1onVghKaftjlSWt4AFexzM=",
-        version = "v28.5.2+incompatible",
     )
     go_repository(
         name = "com_github_docker_docker_credential_helpers",
