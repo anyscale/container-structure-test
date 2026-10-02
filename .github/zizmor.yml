@@ -1,0 +1,6 @@
+rules:
+  dependabot-cooldown:
+    config:
+      # Dependency bumps here wait three days after a release; keep zizmor's
+      # threshold in step with dependabot.yml.
+      days: 3
