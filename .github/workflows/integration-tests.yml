@@ -60,6 +60,14 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
+    # bazel/test builds HEAD's binary through its own go.mod (replace => ../..),
+    # which gazelle reads without consulting the root go.mod. Fail if that copy
+    # lags the root's dependency versions; fix with `go mod tidy` in bazel/test.
+    - name: Smoke-test go.mod in sync
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      working-directory: bazel/test
+      run: go mod tidy -diff
+
     - name: Run tests
       run: |
         make test

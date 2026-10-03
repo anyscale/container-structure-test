@@ -1,6 +1,8 @@
 # Bazel options go here
 
-# Required so the container_structure_test module's isolated go_deps usage is
-# accepted while building the from-source binary that backs the smoke-test
-# toolchain.
-common --experimental_isolated_extension_usages
+# go.mod replaces container-structure-test with ../.., so gazelle's go_deps
+# copies and watches the whole repository, this directory included. Convenience
+# symlinks here (bazel-test, bazel-out, ...) would put this workspace's execroot
+# inside that copy, and a Bazel 8 server then fails on the `~`-separated repo
+# names a Bazel 7 server left behind in the shared output base.
+common --symlink_prefix=/

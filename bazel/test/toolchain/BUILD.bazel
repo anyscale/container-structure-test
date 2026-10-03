@@ -1,0 +1,20 @@
+load("@container_structure_test//bazel:toolchain.bzl", "structure_test_toolchain")
+
+# bzlmod-only: MODULE.bazel registers this toolchain so the smoke tests run
+# HEAD's rule against HEAD's binary, built from the go_deps repository that
+# go.mod replaces with ../.. . WORKSPACE.bazel registers
+# @container_structure_test//bazel:from_source_structure_test_toolchain instead
+# and has no such repository, so both targets are manual to keep //... from
+# building them there.
+structure_test_toolchain(
+    name = "from_source_structure_test",
+    structure_test = "@com_github_googlecontainertools_container_structure_test//cmd/container-structure-test",
+    tags = ["manual"],
+)
+
+toolchain(
+    name = "from_source_structure_test_toolchain",
+    tags = ["manual"],
+    toolchain = ":from_source_structure_test",
+    toolchain_type = "@container_structure_test//bazel:structure_test_toolchain_type",
+)

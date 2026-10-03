@@ -1,6 +1,1 @@
 common --enable_bzlmod
-
-# The go_deps extension is isolated so this module's go.mod resolves on its own
-# instead of joining the MVS over every consumer's Go modules; a consumer's Go
-# dependency versions never move because it depends on this module.
-common --experimental_isolated_extension_usages
