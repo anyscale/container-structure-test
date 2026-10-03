@@ -4,7 +4,7 @@
 #
 # Regenerate after go.mod changes (run from the repo root, then move the macro
 # registration into bazel/test/WORKSPACE.bazel rather than the root WORKSPACE):
-#   bazel run //:gazelle -- update-repos -from_file=go.mod \
+#   bazel run //tools:gazelle -- update-repos -from_file=go.mod \
 #     -to_macro=bazel/test/go_deps.bzl%go_dependencies -prune
 #
 # The load() below must reference @bazel_gazelle (WORKSPACE repo name), not

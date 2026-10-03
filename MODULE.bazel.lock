@@ -248,7 +248,7 @@
   "moduleExtensions": {
     "//:repositories.bzl%extension": {
       "general": {
-        "bzlTransitiveDigest": "uPqtUSwNKByH+bf9J0Ds6Ouyck2cKI8kLoAyOeNxGuo=",
+        "bzlTransitiveDigest": "Z5z2vh9n20fz6l+8iDniTFvLFepo6kMq/j4xzByCSpQ=",
         "usagesDigest": "Cl/BMlQZ4+2G4wu2UOGGJvV/Tqz06ha25FDJ6s6QXb4=",
         "recordedInputs": [
           "REPO_MAPPING:,aspect_bazel_lib aspect_bazel_lib+",
