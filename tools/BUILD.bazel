@@ -1,0 +1,5 @@
+load("@gazelle//:def.bzl", "gazelle")
+
+# gazelle is a dev dependency, so this load lives outside the root package that
+# consumers load. gazelle runs against the whole repository from any package.
+gazelle(name = "gazelle")

@@ -1,9 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/GoogleContainerTools/container-structure-test
 # gazelle:exclude bazel
-gazelle(name = "gazelle")
 
 # For stardoc to reference the file directly
 exports_files(["defs.bzl"])

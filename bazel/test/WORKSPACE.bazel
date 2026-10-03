@@ -52,7 +52,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 # go_deps.bzl is generated from //:go.mod via
-# `bazel run //:gazelle -- update-repos -from_file=go.mod -to_macro=bazel/test/go_deps.bzl%go_dependencies -prune`
+# `bazel run //tools:gazelle -- update-repos -from_file=go.mod -to_macro=bazel/test/go_deps.bzl%go_dependencies -prune`
 # (regenerate when go.mod changes). It must run before go_rules_dependencies so
 # its go_repository declarations win over rules_go's defaults.
 load("//:go_deps.bzl", "go_dependencies")
