@@ -1,4 +1,4 @@
-name: PR unit tests
+name: Integration tests
 
 # PRs are covered by pull_request; push is limited to main so same-repo PR
 # branches don't run every build twice.
@@ -18,7 +18,7 @@ concurrency:
   
 jobs:
   build:
-    name: PR unit tests
+    name: Integration tests
     strategy:
       matrix:
         # macos-15-intel is the only GitHub-hosted macOS runner that can run a
