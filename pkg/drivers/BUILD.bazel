@@ -25,7 +25,10 @@ go_library(
 
 go_test(
     name = "drivers_test",
-    srcs = ["tar_driver_test.go"],
+    srcs = [
+        "driver_test.go",
+        "tar_driver_test.go",
+    ],
     embed = [":drivers"],
     deps = ["//internal/pkgutil"],
 )
