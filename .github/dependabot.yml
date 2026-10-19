@@ -6,12 +6,20 @@
 version: 2
 updates:
   - package-ecosystem: gomod
-    directory: "/"
+    # bazel/test's go.mod replaces the root module, so its pins must move with
+    # the root's; group-by opens one PR per dependency covering both.
+    directories:
+      - "/"
+      - "/bazel/test"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
     cooldown:
       default-days: 3
+    groups:
+      go-modules:
+        patterns: ["*"]
+        group-by: dependency-name
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
